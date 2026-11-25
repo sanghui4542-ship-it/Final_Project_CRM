@@ -68,14 +68,17 @@ StoreCRM은 소규모 매장 사장님이 고객 정보, 방문·결제 이력, 
 ## 시스템 흐름
 
 ```mermaid
-flowchart LR
-    Browser["사용자 브라우저"] -->|"화면 조회·API 요청"| Web["Spring MVC · Spring Security"]
+flowchart TD
+    Browser["사용자 브라우저"] --> Web["Spring MVC · Spring Security"]
     Web --> Service["도메인 서비스"]
-    Service -->|"JPA·SQL"| DB[("MySQL 8")]
-    Web -->|"Thymeleaf 렌더링"| Browser
-    Service -->|"재방문 문구 생성"| AI["OpenRouter API"]
-    Service -->|"비밀번호 재설정 메일"| Mail["Gmail SMTP"]
+    Service --> DB[("MySQL 8")]
+    Service --> AI["OpenRouter API"]
+    Service --> Mail["Gmail SMTP"]
 ```
+
+- **화면 조회** — 서버가 Thymeleaf로 HTML을 렌더링해 브라우저에 반환합니다.
+- **데이터 처리** — 도메인 서비스가 Spring Data JPA와 SQL을 통해 MySQL 데이터를 조회하고 저장합니다.
+- **외부 연동** — OpenRouter API로 재방문 문구를 생성하고, Gmail SMTP로 비밀번호 재설정 메일을 발송합니다.
 
 ## 팀 구성
 
