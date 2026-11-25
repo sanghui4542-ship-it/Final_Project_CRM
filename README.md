@@ -65,18 +65,6 @@ StoreCRM은 소규모 매장 사장님이 고객 정보, 방문·결제 이력, 
 - 문구 수, 길이, 중복 여부, 응답 잘림을 검증하고, 형식 검증에 실패하면 한 번 더 요청합니다.
 - 한국 시간 기준 매장당 하루 5회로 제한하며, 생성에 실패하면 예약한 횟수를 복구합니다. 화면에서는 문구별 복사와 남은 횟수 확인을 지원합니다.
 
-## 기술 스택
-
-| 구분 | 기술 |
-| --- | --- |
-| 언어·빌드 | Java 25, Gradle Wrapper 9.2.1, Lombok |
-| 백엔드 | Spring Boot 4.0.0, Spring MVC, Bean Validation, 내장 Tomcat |
-| 데이터베이스 | MySQL 8, Spring Data JPA, Hibernate, JPQL·SQL |
-| 프론트엔드 | Thymeleaf, HTML·CSS·JavaScript, Bootstrap 5.3.3, Chart.js 4.4.1 |
-| 인증·인가 | Spring Security, Google OAuth 2.0, JJWT 0.12.6, BCrypt |
-| 외부 연동 | OpenRouter API, Spring `RestClient`, Spring Boot Mail, Gmail SMTP |
-| 테스트 | JUnit 5, Mockito, Spring Boot Test, Spring Security Test, H2 |
-| 배포 | GitHub Actions, AWS S3, AWS EC2, Ubuntu 24.04, systemd |
 
 ## 시스템 흐름
 
