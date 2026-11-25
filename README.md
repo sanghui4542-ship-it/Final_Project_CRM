@@ -66,43 +66,62 @@ StoreCRM은 소규모 매장 사장님이 고객 정보, 방문·결제 이력, 
 - 한국 시간 기준 매장당 하루 5회로 제한하며, 생성에 실패하면 예약한 횟수를 복구합니다. 화면에서는 문구별 복사와 남은 횟수 확인을 지원합니다.
 
 
-## 시스템 흐름
+## 전체 시스템 흐름
 
 ```mermaid
-sequenceDiagram
-    participant UI as 사용자 화면
-    participant CRM as Spring Boot
-    participant DB as MySQL
-    participant AI as OpenRouter
+flowchart TB
+    ENTRY["StoreCRM 접속<br/>브라우저 · Thymeleaf · Bootstrap"]
+    AUTH["인증 및 역할 확인<br/>Spring Security · 폼 로그인 · Google OAuth 2.0"]
 
-    rect rgba(59, 130, 246, 0.12)
-        Note over UI,DB: 매장 분석 및 RFM 조회
-        UI->>CRM: 매장과 조회 월 선택
-        CRM->>CRM: 로그인 및 매장 소유권 확인
-        CRM->>DB: 방문·결제 이력 집계
-        DB-->>CRM: 매출·방문 지표와 RFM 집계 반환
-        CRM-->>UI: Thymeleaf로 분석 화면 반환
-        UI->>UI: Chart.js로 차트 표시
-    end
+    OWNER["사장님 · USER<br/>소유 매장 선택"]
+    ADMIN["플랫폼 관리자 · ADMIN<br/>관리자 대시보드"]
 
-    rect rgba(168, 85, 247, 0.12)
-        Note over UI,AI: AI 재방문 문구 생성
-        UI->>CRM: 고객 등급 선택 후 생성 요청
-        CRM->>CRM: 매장·고객 등급 확인 및 생성 횟수 예약
-        CRM->>AI: 업종·고객 등급·등급별 인원 전달
-        AI-->>CRM: 재방문 문구 응답
-        CRM-->>UI: 검증된 문구 3개와 남은 횟수 반환
-        UI->>UI: 문구와 복사 버튼 표시
-    end
+    OWNER_WORK["매장 운영<br/>홈 요약 · 고객 관리<br/>방문·포인트·쿠폰 · 분석·RFM·AI"]
+    ADMIN_WORK["플랫폼 운영<br/>사장님 계정 관리 · 매장 등록·수정<br/>매장 소유자 변경 · 등록 현황 집계"]
+
+    SERVER["애플리케이션 서버<br/>Java 25 · Spring Boot · Spring MVC"]
+    DB["고객·매장·거래 데이터<br/>Spring Data JPA · MySQL 8"]
+    AI["AI 문구 생성<br/>RestClient · OpenRouter API"]
+    MAIL["비밀번호 재설정 메일<br/>Spring Boot Mail · Gmail SMTP"]
+
+    ENTRY --> AUTH
+    AUTH --> OWNER --> OWNER_WORK --> SERVER
+    AUTH --> ADMIN --> ADMIN_WORK --> SERVER
+    SERVER --> DB
+    SERVER --> AI
+    SERVER --> MAIL
+
+    classDef entry fill:#EFF6FF,stroke:#60A5FA,color:#1E3A8A
+    classDef owner fill:#DBEAFE,stroke:#3B82F6,color:#1E3A8A
+    classDef admin fill:#EDE9FE,stroke:#8B5CF6,color:#4C1D95
+    classDef server fill:#1E3A8A,stroke:#60A5FA,color:#FFFFFF,stroke-width:2px
+    classDef integration fill:#ECFDF5,stroke:#10B981,color:#064E3B
+
+    class ENTRY,AUTH entry
+    class OWNER,OWNER_WORK owner
+    class ADMIN,ADMIN_WORK admin
+    class SERVER server
+    class DB,AI,MAIL integration
 ```
 
-| 처리 단계 | 사용 기술 |
+### 역할별 사용 흐름
+
+| 역할 | 주요 흐름 |
 | --- | --- |
-| 요청 처리·권한 검증 | Spring MVC · Spring Security |
-| 지표 조회·집계 | Spring Data JPA · MySQL 8 |
-| 화면 렌더링·시각화 | Thymeleaf · Bootstrap · JavaScript · Chart.js |
-| AI 문구 연동 | JavaScript `fetch()` · Spring `RestClient` · OpenRouter API |
-| 비밀번호 재설정 메일 | Spring Boot Mail · Gmail SMTP |
+| **사장님** | 로그인 → 소유 매장 선택 → 고객 등록·검색 → 방문·결제 기록 → 포인트·쿠폰 관리 → 매출·방문 분석과 RFM 고객 등급 확인 → 필요 시 AI 재방문 문구 생성 |
+| **플랫폼 관리자** | 관리자 로그인 → 사장님 계정·매장 현황 확인 → 계정 또는 매장 등록·수정 → 필요 시 매장 소유자 변경 |
+| **공통 계정 기능** | 비밀번호 재설정 요청 → Gmail SMTP로 재설정 링크 발송 → 새 비밀번호 설정 |
+
+매장 단위 요청은 서버에서 소유권을 확인합니다. 고객 삭제와 매장 폐업 시에는 정책에 따라 주요 개인정보를 정리하고, 과거 매출·방문 집계에 필요한 거래 이력을 유지합니다.
+
+### 빌드·배포 흐름
+
+```text
+GitHub PR·푸시
+  → GitHub Actions에서 Gradle 빌드 및 테스트
+  → main 브랜치 배포 시 실행 JAR를 AWS S3에 업로드
+  → AWS EC2에서 JAR를 내려받고 systemd 서비스 재시작
+```
 
 ## 팀 구성
 
