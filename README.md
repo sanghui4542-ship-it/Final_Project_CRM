@@ -82,25 +82,24 @@ StoreCRM은 소규모 매장 사장님이 고객 정보, 방문·결제 이력, 
 
 ```mermaid
 flowchart TD
-    UI["브라우저<br/>HTML · Bootstrap · JavaScript · Chart.js"]
-    Web["웹 서버<br/>Spring MVC · Spring Security · Thymeleaf"]
-    Service["서비스<br/>Java 25 · Spring Boot 4.0.0"]
-    DB[("MySQL 8")]
-    AI["OpenRouter API"]
-    Mail["Gmail SMTP"]
+    UI["사용자 화면<br/>Bootstrap · JavaScript · Chart.js"]
+    WEB["요청 처리 · 화면 렌더링<br/>Spring MVC · Spring Security · Thymeleaf"]
+    SERVICE["업무 로직<br/>고객 관리 · 방문 거래 · 매장 분석"]
+    DATA["데이터 조회 · 저장<br/>Spring Data JPA · Hibernate · MySQL 8"]
 
-    UI --> Web
-    Web --> Service
-    Service --> DB
-    Service --> AI
-    Service --> Mail
+    UI --> WEB
+    WEB --> SERVICE
+    SERVICE --> DATA
 ```
 
-- **화면 표시** — Spring MVC가 요청을 처리하고 Thymeleaf로 HTML을 렌더링합니다. 브라우저에서 Chart.js가 매출·방문 및 RFM 차트를 그립니다.
-- **데이터 조회·저장** — Spring Data JPA와 Hibernate로 MySQL 데이터를 다루고, 분석 지표는 JPQL과 SQL로 집계합니다.
-- **외부 연동** — Spring `RestClient`로 OpenRouter에 재방문 문구를 요청하고, Spring Boot Mail로 비밀번호 재설정 메일을 발송합니다.
-- **배포** — GitHub Actions가 테스트하고 빌드한 실행 JAR를 S3에 전달합니다. EC2에서는 systemd가 애플리케이션을 실행합니다.
+화면 조회 시 서버는 처리 결과를 Thymeleaf로 렌더링해 브라우저에 반환합니다. 분석 화면에서는 Chart.js가 매출·방문 지표와 RFM 결과를 차트로 표시합니다.
 
+### 외부 서비스 연동
+
+| 사용자 동작 | 연결 기술 | 결과 |
+| --- | --- | --- |
+| AI 문구 생성 | Spring `RestClient` → OpenRouter API | 생성된 문구 3개를 받아 화면을 새로고침하지 않고 표시 |
+| 비밀번호 재설정 요청 | Spring Boot Mail → Gmail SMTP | 가입한 이메일로 비밀번호 재설정 링크 발송 |
 
 ## 팀 구성
 
