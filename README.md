@@ -4,6 +4,19 @@ StoreCRM은 소규모 매장 사장님이 고객 정보, 방문·결제 이력, 
 
 매장 분석 화면에서는 매출과 방문 패턴을 확인하고, RFM으로 분류한 고객 등급에 맞춰 AI 재방문 문구를 생성할 수 있습니다. 플랫폼 관리자는 별도의 관리자 화면에서 사장님 계정과 매장 연결 현황을 관리합니다.
 
+## 기술 스택
+
+| 구분 | 사용 기술 |
+| --- | --- |
+| 언어·빌드 | Java 25, Gradle Wrapper 9.2.1, Lombok |
+| 백엔드 | Spring Boot 4.0.0, Spring MVC, Bean Validation, 내장 Tomcat |
+| 프론트엔드 | Thymeleaf, HTML·CSS·JavaScript, Bootstrap 5.3.3, Chart.js 4.4.1 |
+| 데이터베이스 | MySQL 8, Spring Data JPA, Hibernate, JPQL·SQL |
+| 인증·인가 | Spring Security, Google OAuth 2.0, JJWT 0.12.6, BCrypt |
+| 외부 연동 | Spring RestClient, OpenRouter API, Spring Boot Mail, Gmail SMTP |
+| 테스트 | JUnit 5, Mockito, Spring Boot Test, Spring Security Test, H2 |
+| CI/CD·인프라 | GitHub Actions, AWS S3, AWS EC2, Ubuntu 24.04, systemd |
+
 ## 주요 기능
 
 | 영역 | 구현 내용 |
@@ -69,16 +82,25 @@ StoreCRM은 소규모 매장 사장님이 고객 정보, 방문·결제 이력, 
 
 ```mermaid
 flowchart TD
-    Browser["사용자 브라우저"] --> Web["Spring MVC · Spring Security"]
-    Web --> Service["도메인 서비스"]
-    Service --> DB[("MySQL 8")]
-    Service --> AI["OpenRouter API"]
-    Service --> Mail["Gmail SMTP"]
+    UI["브라우저<br/>HTML · Bootstrap · JavaScript · Chart.js"]
+    Web["웹 서버<br/>Spring MVC · Spring Security · Thymeleaf"]
+    Service["서비스<br/>Java 25 · Spring Boot 4.0.0"]
+    DB[("MySQL 8")]
+    AI["OpenRouter API"]
+    Mail["Gmail SMTP"]
+
+    UI --> Web
+    Web --> Service
+    Service --> DB
+    Service --> AI
+    Service --> Mail
 ```
 
-- **화면 조회** — 서버가 Thymeleaf로 HTML을 렌더링해 브라우저에 반환합니다.
-- **데이터 처리** — 도메인 서비스가 Spring Data JPA와 SQL을 통해 MySQL 데이터를 조회하고 저장합니다.
-- **외부 연동** — OpenRouter API로 재방문 문구를 생성하고, Gmail SMTP로 비밀번호 재설정 메일을 발송합니다.
+- **화면 표시** — Spring MVC가 요청을 처리하고 Thymeleaf로 HTML을 렌더링합니다. 브라우저에서 Chart.js가 매출·방문 및 RFM 차트를 그립니다.
+- **데이터 조회·저장** — Spring Data JPA와 Hibernate로 MySQL 데이터를 다루고, 분석 지표는 JPQL과 SQL로 집계합니다.
+- **외부 연동** — Spring `RestClient`로 OpenRouter에 재방문 문구를 요청하고, Spring Boot Mail로 비밀번호 재설정 메일을 발송합니다.
+- **배포** — GitHub Actions가 테스트하고 빌드한 실행 JAR를 S3에 전달합니다. EC2에서는 systemd가 애플리케이션을 실행합니다.
+
 
 ## 팀 구성
 
