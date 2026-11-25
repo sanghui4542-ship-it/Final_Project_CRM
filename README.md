@@ -66,45 +66,43 @@ StoreCRM은 소규모 매장 사장님이 고객 정보, 방문·결제 이력, 
 - 한국 시간 기준 매장당 하루 5회로 제한하며, 생성에 실패하면 예약한 횟수를 복구합니다. 화면에서는 문구별 복사와 남은 횟수 확인을 지원합니다.
 
 
-## 시스템 아키텍처
-
-StoreCRM은 Spring MVC로 매장 업무 화면을 제공하고, MySQL에 고객·거래 데이터를 저장합니다. 재방문 문구 생성과 비밀번호 재설정 메일은 각각 OpenRouter와 Gmail SMTP에 연결합니다.
+## 시스템 흐름
 
 ```mermaid
-flowchart TB
-    UI["사용자 화면<br/>HTML · Bootstrap · JavaScript · Chart.js"]
-    WEB["요청 처리 및 화면 렌더링<br/>Spring MVC · Spring Security · Thymeleaf"]
-    CORE["StoreCRM 서비스<br/>Java 25 · Spring Boot 4.0.0"]
+sequenceDiagram
+    participant UI as 사용자 화면
+    participant CRM as Spring Boot
+    participant DB as MySQL
+    participant AI as OpenRouter
 
-    DB["고객·거래 데이터<br/>Spring Data JPA · MySQL 8"]
-    AI["AI 재방문 문구<br/>RestClient · OpenRouter API"]
-    MAIL["비밀번호 재설정<br/>Spring Boot Mail · Gmail SMTP"]
+    rect rgba(59, 130, 246, 0.12)
+        Note over UI,DB: 매장 분석 및 RFM 조회
+        UI->>CRM: 매장과 조회 월 선택
+        CRM->>CRM: 로그인 및 매장 소유권 확인
+        CRM->>DB: 방문·결제 이력 집계
+        DB-->>CRM: 매출·방문 지표와 RFM 집계 반환
+        CRM-->>UI: Thymeleaf로 분석 화면 반환
+        UI->>UI: Chart.js로 차트 표시
+    end
 
-    UI --> WEB --> CORE
-    CORE --> DB
-    CORE --> AI
-    CORE --> MAIL
-
-    classDef ui fill:#E0F2FE,stroke:#0284C7,color:#0C4A6E,stroke-width:2px
-    classDef web fill:#DBEAFE,stroke:#3B82F6,color:#1E3A8A,stroke-width:2px
-    classDef core fill:#1E3A8A,stroke:#60A5FA,color:#FFFFFF,stroke-width:2px
-    classDef data fill:#DCFCE7,stroke:#16A34A,color:#14532D,stroke-width:2px
-    classDef ai fill:#F3E8FF,stroke:#9333EA,color:#581C87,stroke-width:2px
-    classDef mail fill:#FEF3C7,stroke:#D97706,color:#78350F,stroke-width:2px
-
-    class UI ui
-    class WEB web
-    class CORE core
-    class DB data
-    class AI ai
-    class MAIL mail
+    rect rgba(168, 85, 247, 0.12)
+        Note over UI,AI: AI 재방문 문구 생성
+        UI->>CRM: 고객 등급 선택 후 생성 요청
+        CRM->>CRM: 매장·고객 등급 확인 및 생성 횟수 예약
+        CRM->>AI: 업종·고객 등급·등급별 인원 전달
+        AI-->>CRM: 재방문 문구 응답
+        CRM-->>UI: 검증된 문구 3개와 남은 횟수 반환
+        UI->>UI: 문구와 복사 버튼 표시
+    end
 ```
 
-| 대표 기능 | 화면에 결과가 표시되는 흐름 |
+| 처리 단계 | 사용 기술 |
 | --- | --- |
-| **매장 분석** | 매장과 조회 월 선택 → 매출·방문 기록 집계 → Thymeleaf로 지표 표시 → Chart.js로 차트 렌더링 |
-| **RFM 고객 등급** | 고객별 방문·결제 이력 집계 → RFM 점수와 등급 산정 → 등급 분포 차트와 고객 목록 표시 |
-| **AI 재방문 문구** | 고객 등급 선택 → 매장 소유권·등급 확인 → OpenRouter 호출 → 문구 3개와 복사 버튼 표시 |
+| 요청 처리·권한 검증 | Spring MVC · Spring Security |
+| 지표 조회·집계 | Spring Data JPA · MySQL 8 |
+| 화면 렌더링·시각화 | Thymeleaf · Bootstrap · JavaScript · Chart.js |
+| AI 문구 연동 | JavaScript `fetch()` · Spring `RestClient` · OpenRouter API |
+| 비밀번호 재설정 메일 | Spring Boot Mail · Gmail SMTP |
 
 ## 팀 구성
 
