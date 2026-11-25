@@ -187,11 +187,3 @@ deploy/                    서비스 설정과 배포 스크립트
 .github/workflows/         CI/CD 워크플로
 ```
 
-## 설계 문서
-
-- [프로젝트 공식 설계](docs/architecture/00_SaaS_공식설계_v1.md)
-- [데이터베이스 ERD](docs/architecture/04_SaaS_ERD.md)
-- [API 설계](docs/architecture/05_SaaS_API.md)
-- [고객 삭제와 개인정보 처리 정책](docs/architecture/07_고객_삭제_정책.md)
-- [매장 폐업 정책](docs/architecture/10_매장_폐업_정책.md)
-- [개발·운영 환경](docs/개발_운영_환경.md)
